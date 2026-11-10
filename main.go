@@ -13,6 +13,7 @@ import (
 func main() {
 	level := flag.String("level", "info", "minimum level: debug|info|warn|error")
 	grep := flag.String("grep", "", "only lines containing this text")
+	invert := flag.Bool("v", false, "with -grep, keep only lines that do not contain the text")
 	flag.Parse()
 
 	min, ok := logfilter.ParseLevel(*level)
@@ -24,7 +25,7 @@ func main() {
 	sc := bufio.NewScanner(os.Stdin)
 	for sc.Scan() {
 		line := sc.Text()
-		if logfilter.Keep(line, min, *grep) {
+		if logfilter.Keep(line, min, *grep, *invert) {
 			fmt.Println(line)
 		}
 	}

@@ -42,11 +42,16 @@ func lineLevel(line string) Level {
 	return Info
 }
 
-// Keep reports whether a line is at or above min and contains the text
-// (an empty text matches every line).
-func Keep(line string, min Level, contains string) bool {
+// Keep reports whether a line is at or above min and matches the text
+// (an empty text matches every line). With invert, the text match is flipped:
+// only lines that do not contain it are kept. invert has no effect when
+// contains is empty.
+func Keep(line string, min Level, contains string, invert bool) bool {
 	if lineLevel(line) < min {
 		return false
 	}
-	return contains == "" || strings.Contains(line, contains)
+	if contains == "" {
+		return true
+	}
+	return strings.Contains(line, contains) != invert
 }
