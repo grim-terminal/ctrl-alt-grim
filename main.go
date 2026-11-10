@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/grim-terminal/ctrl-alt-grim/internal/logfilter"
 )
@@ -13,6 +14,7 @@ import (
 func main() {
 	level := flag.String("level", "info", "minimum level: debug|info|warn|error")
 	grep := flag.String("grep", "", "only lines containing this text")
+	since := flag.Duration("since", 0, "only lines newer than this age, e.g. 10m (lines start with an RFC3339 timestamp)")
 	flag.Parse()
 
 	min, ok := logfilter.ParseLevel(*level)
@@ -21,10 +23,15 @@ func main() {
 		os.Exit(2)
 	}
 
+	var cutoff time.Time
+	if *since > 0 {
+		cutoff = time.Now().Add(-*since)
+	}
+
 	sc := bufio.NewScanner(os.Stdin)
 	for sc.Scan() {
 		line := sc.Text()
-		if logfilter.Keep(line, min, *grep) {
+		if logfilter.Keep(line, min, *grep) && logfilter.Since(line, cutoff) {
 			fmt.Println(line)
 		}
 	}
